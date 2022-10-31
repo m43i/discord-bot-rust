@@ -1,6 +1,24 @@
-use crate::{lib::{messages::{send_dj_message}, utils::check_text_channel}};
-use serenity::{prelude::Context, model::prelude::Message, framework::standard::{Args, CommandResult, macros::command}};
-use songbird::input;
+use std::io::Error;
+use crate::lib::{messages::{send_dj_message}, utils::check_text_channel};
+use serenity::{prelude::{Context, Mentionable}, model::prelude::Message, framework::standard::{Args, CommandResult, macros::command}};
+use songbird::{input, Call};
+use tokio::sync::MutexGuard;
+
+async fn play_music(handler: &mut MutexGuard<'_, Call>, ctx: &Context, msg: &Message, url: String) -> Result<(), Error> {
+    let source = match input::ytdl(&url).await {
+        Ok(source) => source,
+        Err(why) => {
+            println!("Err starting source: {:?}", why);
+
+            send_dj_message(&ctx, msg.channel_id, "Fehler mit ffmpeg".to_string()).await;
+            return Ok(());
+        },
+    };
+
+    let _ = handler.play_source(source);
+    send_dj_message(&ctx, msg.channel_id, "Musik ballert jetzt auf den Ohren.".to_string()).await;
+    Ok(())
+}
 
 #[command]
 #[only_in(guilds)]
@@ -31,23 +49,33 @@ pub async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
 
     if let Some(handler_lock) = manager.get(guild_id) {
         let mut handler = handler_lock.lock().await;
-
-        let source = match input::ytdl(&url).await {
-            Ok(source) => source,
-            Err(why) => {
-                println!("Err starting source: {:?}", why);
-
-                send_dj_message(&ctx, msg.channel_id, "Fehler mit ffmpeg".to_string()).await;
-
+        if let Err(_e) = play_music(&mut handler, &ctx, &msg, url).await {
+            send_dj_message(&ctx, msg.channel_id, "Fehler beim Abspielen der Musik.".to_string()).await;
+        }
+    } else {
+        let channel_id = guild
+            .voice_states
+            .get(&msg.author.id)
+            .and_then(|voice_state| voice_state.channel_id);
+        let connect_to = match channel_id {
+            Some(channel) => channel,
+            None => {
+                send_dj_message(&ctx, msg.channel_id, "Freundchen du bist in keinem Voice Channel.".to_string()).await;
+    
                 return Ok(());
             },
         };
+        let (handle_lock, success) = manager.join(guild_id, connect_to).await;
+        if let Ok(_channel) = success {
+            send_dj_message(&ctx, msg.channel_id, format!("Ich bin jetzt in {}.", connect_to.mention()).to_string()).await;
 
-        let _ = handler.play_source(source);
-
-        send_dj_message(&ctx, msg.channel_id, "Musik ballert jetzt auf den Ohren.".to_string()).await;
-    } else {
-        send_dj_message(&ctx, msg.channel_id, "Ich bin noch in keinem Channel mensch.".to_string()).await;
+            let mut handler = handle_lock.lock().await;
+            if let Err(_e) = play_music(&mut handler, &ctx, &msg, url).await {
+                send_dj_message(&ctx, msg.channel_id, "Fehler beim Abspielen der Musik.".to_string()).await;
+            }
+        } else {
+            send_dj_message(&ctx, msg.channel_id, "Ich habe Probleme beim beitreten.".to_string()).await;
+        }
     }
 
     Ok(())

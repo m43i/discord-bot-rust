@@ -20,9 +20,17 @@ use songbird::SerenityInit;
 use std::env;
 
 mod commands;
-mod events;
 mod lib;
-use crate::{commands::play::*, lib::{utils::{get_voice_members, get_channel_ids_from_env}, messages::send_drink_message}};
+use crate::{
+    commands::play::*,
+    lib::{
+        utils::{
+            get_voice_members,
+            get_channel_ids_from_env
+        },
+        messages::send_drink_message
+    }
+};
 use crate::commands::deafen::*;
 use crate::commands::unmute::*;
 use crate::commands::mute::*;
@@ -30,8 +38,8 @@ use crate::commands::undeafen::*;
 use crate::commands::stop::*;
 use crate::commands::skip::*;
 use crate::commands::add::*;
-use crate::commands::leave::*;
-use crate::commands::join::*;
+use crate::commands::pause::*;
+use crate::commands::resume::*;
 
 fn get_reminder_messages() -> Vec<&'static str> {
     let messages = vec![
@@ -54,7 +62,7 @@ fn get_reminder_messages() -> Vec<&'static str> {
 
 #[group]
 #[commands(
-    deafen, join, leave, mute, play, add, skip, stop, undeafen, unmute
+play, stop, pause, resume, add, skip, deafen, undeafen, mute, unmute
 )]
 struct General;
 

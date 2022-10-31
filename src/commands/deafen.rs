@@ -1,5 +1,4 @@
 use serenity::{framework::standard::{macros::command, CommandResult}, prelude::Context, model::prelude::Message};
-
 use crate::lib::{utils::check_text_channel, messages::send_dj_message};
 
 #[command]

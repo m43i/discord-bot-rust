@@ -22,8 +22,13 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         let _ = handler.stop();
 
         send_dj_message(&ctx, msg.channel_id, "Queue geleert und Songs gestoppt.".to_string()).await;
+        
+        if let Err(e) = manager.remove(guild_id).await {
+            send_dj_message(&ctx, msg.channel_id, format!("Fehler: {:?}", e).to_string()).await;
+        }
+        send_dj_message(&ctx, msg.channel_id, "Gut dann geh ich halt.".to_string()).await;
     } else {
-        send_dj_message(&ctx, msg.channel_id, "Es gibt nichts zu pausieren.".to_string()).await;
+        send_dj_message(&ctx, msg.channel_id, "Es gibt nichts zu stoppen.".to_string()).await;
     }
 
     Ok(())

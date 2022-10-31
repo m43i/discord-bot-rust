@@ -6,5 +6,5 @@ pub mod undeafen;
 pub mod stop;
 pub mod skip;
 pub mod add;
-pub mod leave;
-pub mod join;
+pub mod pause;
+pub mod resume;
