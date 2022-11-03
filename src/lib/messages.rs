@@ -1,10 +1,19 @@
-use serenity::{model::prelude::{ChannelId, Member}, prelude::Context, utils::MessageBuilder};
+use serenity::{
+    model::prelude::{ChannelId, Member},
+    prelude::Context,
+    utils::MessageBuilder,
+};
 
-pub async fn send_drink_message(ctx: &Context, channel_id: ChannelId, message: String, members: Vec<Member>) {
+pub async fn send_drink_message(
+    ctx: &Context,
+    channel_id: ChannelId,
+    message: String,
+    members: Vec<Member>,
+) {
     let mut messgae_builder = MessageBuilder::new()
-    .push_bold("Trink-Reminder: ")
-    .push_line(message)
-    .clone();
+        .push_bold("Trink-Reminder: ")
+        .push_line(message)
+        .clone();
 
     for member in members {
         messgae_builder.mention(&member);

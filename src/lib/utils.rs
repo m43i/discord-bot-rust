@@ -1,8 +1,16 @@
+use serenity::{
+    model::prelude::{ChannelId, ChannelType, Member},
+    prelude::Context,
+};
 use std::env;
-use serenity::{model::prelude::{ChannelId, Member, ChannelType}, prelude::Context};
 
 pub fn check_text_channel(channel: ChannelId) -> bool {
-    if channel.0 != env::var("DJ_CHANNEL").expect("DJ Channel not set").parse::<u64>().unwrap() {
+    if channel.0
+        != env::var("DJ_CHANNEL")
+            .expect("DJ Channel not set")
+            .parse::<u64>()
+            .unwrap()
+    {
         return false;
     } else {
         return true;

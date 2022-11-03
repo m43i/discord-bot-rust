@@ -1,6 +1,10 @@
-use serenity::{framework::standard::{macros::command, CommandResult, Args}, prelude::Context, model::prelude::Message};
+use crate::lib::{messages::send_dj_message, utils::check_text_channel};
+use serenity::{
+    framework::standard::{macros::command, Args, CommandResult},
+    model::prelude::Message,
+    prelude::Context,
+};
 use songbird::input::Restartable;
-use crate::lib::{utils::check_text_channel, messages::send_dj_message};
 
 #[command]
 #[only_in(guilds)]
@@ -11,10 +15,15 @@ async fn add(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let url = match args.single::<String>() {
         Ok(url) => url,
         Err(_) => {
-            send_dj_message(&ctx, msg.channel_id, "Gib eine Video oder Song URL an.".to_string()).await;
+            send_dj_message(
+                &ctx,
+                msg.channel_id,
+                "Gib eine Video oder Song URL an.".to_string(),
+            )
+            .await;
 
             return Ok(());
-        },
+        }
     };
 
     if !url.starts_with("http") {
@@ -44,14 +53,28 @@ async fn add(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 send_dj_message(&ctx, msg.channel_id, "Fehler mit ffmpeg".to_string()).await;
 
                 return Ok(());
-            },
+            }
         };
 
         handler.enqueue_source(source.into());
 
-        send_dj_message(&ctx, msg.channel_id, format!("Song zu Queue hinzugefügt, an Position {}", handler.queue().len()).to_string()).await;
+        send_dj_message(
+            &ctx,
+            msg.channel_id,
+            format!(
+                "Song zu Queue hinzugefügt, an Position {}",
+                handler.queue().len()
+            )
+            .to_string(),
+        )
+        .await;
     } else {
-        send_dj_message(&ctx, msg.channel_id, "Ich bin in keinem Channel du Clown.".to_string()).await;
+        send_dj_message(
+            &ctx,
+            msg.channel_id,
+            "Ich bin in keinem Channel du Clown.".to_string(),
+        )
+        .await;
     }
 
     Ok(())

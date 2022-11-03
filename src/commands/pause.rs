@@ -1,5 +1,9 @@
 use crate::lib::{messages::send_dj_message, utils::check_text_channel};
-use serenity::{prelude::Context, model::prelude::Message, framework::standard::{Args, CommandResult, macros::command}};
+use serenity::{
+    framework::standard::{macros::command, Args, CommandResult},
+    model::prelude::Message,
+    prelude::Context,
+};
 
 #[command]
 #[only_in(guilds)]
@@ -21,13 +25,22 @@ pub async fn pause(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         let queue = handler.queue();
 
         if let Err(_e) = queue.pause() {
-            send_dj_message(&ctx, msg.channel_id, "Musik kann nicht pausiert werden.".to_string()).await;
+            send_dj_message(
+                &ctx,
+                msg.channel_id,
+                "Musik kann nicht pausiert werden.".to_string(),
+            )
+            .await;
         } else {
             send_dj_message(&ctx, msg.channel_id, "Musik pausiert.".to_string()).await;
         }
-
     } else {
-        send_dj_message(&ctx, msg.channel_id, "Es gibt nichts zu pausieren.".to_string()).await;
+        send_dj_message(
+            &ctx,
+            msg.channel_id,
+            "Es gibt nichts zu pausieren.".to_string(),
+        )
+        .await;
     }
 
     Ok(())

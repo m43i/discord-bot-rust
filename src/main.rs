@@ -1,45 +1,31 @@
 use dotenv::dotenv;
 use serenity::{
-    Client, 
-    prelude::{
-        GatewayIntents,
-        EventHandler,
-        Context
-    },
-    model::prelude::{
-        Ready,
-        GuildId,
-        ChannelType
-    },
-    framework::{
-        standard::macros::group,
-        StandardFramework
-    },
+    framework::{standard::macros::group, StandardFramework},
+    model::prelude::{ChannelType, GuildId, Member, Ready},
+    prelude::{Context, EventHandler, GatewayIntents},
+    Client,
 };
 use songbird::SerenityInit;
 use std::env;
 
 mod commands;
 mod lib;
+use crate::commands::add::*;
+use crate::commands::deafen::*;
+use crate::commands::mute::*;
+use crate::commands::pause::*;
+use crate::commands::resume::*;
+use crate::commands::skip::*;
+use crate::commands::stop::*;
+use crate::commands::undeafen::*;
+use crate::commands::unmute::*;
 use crate::{
     commands::play::*,
     lib::{
-        utils::{
-            get_voice_members,
-            get_channel_ids_from_env
-        },
-        messages::send_drink_message
-    }
+        messages::send_drink_message,
+        utils::{get_channel_ids_from_env, get_voice_members},
+    },
 };
-use crate::commands::deafen::*;
-use crate::commands::unmute::*;
-use crate::commands::mute::*;
-use crate::commands::undeafen::*;
-use crate::commands::stop::*;
-use crate::commands::skip::*;
-use crate::commands::add::*;
-use crate::commands::pause::*;
-use crate::commands::resume::*;
 
 fn get_reminder_messages() -> Vec<&'static str> {
     let messages = vec![
@@ -61,9 +47,7 @@ fn get_reminder_messages() -> Vec<&'static str> {
 }
 
 #[group]
-#[commands(
-play, stop, pause, resume, add, skip, deafen, undeafen, mute, unmute
-)]
+#[commands(play, stop, pause, resume, add, skip, deafen, undeafen, mute, unmute)]
 struct General;
 
 struct Handler;
@@ -81,7 +65,11 @@ impl EventHandler for Handler {
         let messages = get_reminder_messages();
         tokio::spawn(async move {
             loop {
-                let members = get_voice_members(&ctx, voice_channels.to_owned()).await;
+                let members: Vec<Member> = get_voice_members(&ctx, voice_channels.to_owned())
+                    .await
+                    .into_iter()
+                    .filter(|m| !m.user.bot)
+                    .collect();
                 if members.len() > 0 {
                     for channel_id in &text_channels {
                         let channel = ctx.cache.channel(*channel_id).unwrap();
@@ -92,8 +80,9 @@ impl EventHandler for Handler {
                                 &ctx,
                                 channel_id,
                                 messages[rand::random::<usize>() % messages.len()].to_string(),
-                                members.to_owned()
-                            ).await;
+                                members.to_owned(),
+                            )
+                            .await;
                         }
                     }
                 }
@@ -105,11 +94,11 @@ impl EventHandler for Handler {
 
 async fn setup_client() -> Client {
     let token = env::var("BOT_TOKEN").expect("Expected a token in the environment");
-    let intents = GatewayIntents::GUILDS |
-    GatewayIntents::GUILD_MESSAGES |
-    GatewayIntents::GUILD_MESSAGE_REACTIONS |
-    GatewayIntents::GUILD_VOICE_STATES |
-    GatewayIntents::MESSAGE_CONTENT;
+    let intents = GatewayIntents::GUILDS
+        | GatewayIntents::GUILD_MESSAGES
+        | GatewayIntents::GUILD_MESSAGE_REACTIONS
+        | GatewayIntents::GUILD_VOICE_STATES
+        | GatewayIntents::MESSAGE_CONTENT;
 
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("!"))

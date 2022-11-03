@@ -1,5 +1,9 @@
-use serenity::{framework::standard::{macros::command, CommandResult}, prelude::Context, model::prelude::Message};
-use crate::lib::{utils::check_text_channel, messages::send_dj_message};
+use crate::lib::{messages::send_dj_message, utils::check_text_channel};
+use serenity::{
+    framework::standard::{macros::command, CommandResult},
+    model::prelude::Message,
+    prelude::Context,
+};
 
 #[command]
 #[only_in(guilds)]
@@ -22,7 +26,12 @@ pub async fn unmute(ctx: &Context, msg: &Message) -> CommandResult {
 
         send_dj_message(&ctx, msg.channel_id, "Ich quatsche wieder.".to_string()).await;
     } else {
-        send_dj_message(&ctx, msg.channel_id, "Ich bin noch in keinem Channel mensch.".to_string()).await;
+        send_dj_message(
+            &ctx,
+            msg.channel_id,
+            "Ich bin noch in keinem Channel mensch.".to_string(),
+        )
+        .await;
     }
 
     Ok(())

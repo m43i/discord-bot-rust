@@ -1,10 +1,10 @@
-pub mod play;
-pub mod deafen;
-pub mod unmute;
-pub mod mute;
-pub mod undeafen;
-pub mod stop;
-pub mod skip;
 pub mod add;
+pub mod deafen;
+pub mod mute;
 pub mod pause;
+pub mod play;
 pub mod resume;
+pub mod skip;
+pub mod stop;
+pub mod undeafen;
+pub mod unmute;

@@ -1,5 +1,9 @@
 use crate::lib::{messages::send_dj_message, utils::check_text_channel};
-use serenity::{prelude::Context, model::prelude::Message, framework::standard::{Args, CommandResult, macros::command}};
+use serenity::{
+    framework::standard::{macros::command, Args, CommandResult},
+    model::prelude::Message,
+    prelude::Context,
+};
 
 #[command]
 #[only_in(guilds)]
@@ -25,9 +29,13 @@ pub async fn resume(ctx: &Context, msg: &Message, _args: Args) -> CommandResult 
         } else {
             send_dj_message(&ctx, msg.channel_id, "Musik ballert wieder.".to_string()).await;
         }
-
     } else {
-        send_dj_message(&ctx, msg.channel_id, "Es gibt nichts zum fortsetzen.".to_string()).await;
+        send_dj_message(
+            &ctx,
+            msg.channel_id,
+            "Es gibt nichts zum fortsetzen.".to_string(),
+        )
+        .await;
     }
 
     Ok(())

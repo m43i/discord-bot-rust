@@ -1,5 +1,9 @@
-use serenity::{framework::standard::{macros::command, CommandResult}, prelude::Context, model::prelude::Message};
-use crate::lib::{utils::check_text_channel, messages::send_dj_message};
+use crate::lib::{messages::send_dj_message, utils::check_text_channel};
+use serenity::{
+    framework::standard::{macros::command, CommandResult},
+    model::prelude::Message,
+    prelude::Context,
+};
 
 #[command]
 pub async fn deafen(ctx: &Context, msg: &Message) -> CommandResult {
@@ -17,9 +21,14 @@ pub async fn deafen(ctx: &Context, msg: &Message) -> CommandResult {
     let handler_lock = match manager.get(guild_id) {
         Some(handler) => handler,
         None => {
-            send_dj_message(&ctx, msg.channel_id, "Ich bin in keinem Voice Channel.".to_string()).await;
+            send_dj_message(
+                &ctx,
+                msg.channel_id,
+                "Ich bin in keinem Voice Channel.".to_string(),
+            )
+            .await;
             return Ok(());
-        },
+        }
     };
 
     let mut handler = handler_lock.lock().await;

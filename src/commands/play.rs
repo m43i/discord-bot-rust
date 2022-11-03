@@ -15,7 +15,7 @@ async fn play_music(handler: &mut MutexGuard<'_, Call>, ctx: &Context, msg: &Mes
         },
     };
 
-    let _ = handler.play_source(source);
+    let _ = handler.enqueue_source(source);
     send_dj_message(&ctx, msg.channel_id, "Musik ballert jetzt auf den Ohren.".to_string()).await;
     Ok(())
 }
