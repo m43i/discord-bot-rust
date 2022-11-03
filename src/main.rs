@@ -10,17 +10,17 @@ use std::env;
 
 mod commands;
 mod lib;
-use crate::commands::add::*;
-use crate::commands::deafen::*;
-use crate::commands::mute::*;
-use crate::commands::pause::*;
-use crate::commands::resume::*;
-use crate::commands::skip::*;
-use crate::commands::stop::*;
-use crate::commands::undeafen::*;
-use crate::commands::unmute::*;
 use crate::{
+    commands::add::*,
+    commands::deafen::*,
+    commands::mute::*,
+    commands::pause::*,
     commands::play::*,
+    commands::resume::*,
+    commands::skip::*,
+    commands::stop::*,
+    commands::undeafen::*,
+    commands::unmute::*,
     lib::{
         messages::send_drink_message,
         utils::{get_channel_ids_from_env, get_voice_members},

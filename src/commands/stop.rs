@@ -1,5 +1,9 @@
-use serenity::{framework::standard::{macros::command, CommandResult, Args}, prelude::Context, model::prelude::Message};
-use crate::lib::{utils::check_text_channel, messages::send_dj_message};
+use crate::lib::{messages::send_dj_message, utils::check_text_channel};
+use serenity::{
+    framework::standard::{macros::command, Args, CommandResult},
+    model::prelude::Message,
+    prelude::Context,
+};
 
 #[command]
 #[only_in(guilds)]
@@ -19,14 +23,19 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         let mut handler = handler_lock.lock().await;
         let queue = handler.queue();
         let _ = queue.stop();
-        
+
         if let Err(e) = handler.leave().await {
             println!("Error leaving channel: {:?}", e);
         };
 
         send_dj_message(&ctx, msg.channel_id, "Gut dann geh ich halt.".to_string()).await;
     } else {
-        send_dj_message(&ctx, msg.channel_id, "Es gibt nichts zu stoppen.".to_string()).await;
+        send_dj_message(
+            &ctx,
+            msg.channel_id,
+            "Es gibt nichts zu stoppen.".to_string(),
+        )
+        .await;
     }
 
     Ok(())
