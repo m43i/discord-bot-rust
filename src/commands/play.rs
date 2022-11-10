@@ -24,7 +24,13 @@ async fn play_music(
         }
     };
 
-    let _ = handler.enqueue_source(source);
+    handler.enqueue_source(source);
+
+    if handler.queue().len() != 1 {
+        let queue = handler.queue();
+        queue.modify_queue(|q| q.insert(0, queue.dequeue(queue.len() - 1).unwrap()));
+    }
+
     send_dj_message(
         &ctx,
         msg.channel_id,
