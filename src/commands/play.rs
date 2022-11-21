@@ -24,19 +24,30 @@ async fn play_music(
         }
     };
 
-    handler.enqueue_source(source);
+    let _ = handler.enqueue_source(source);
 
-    if handler.queue().len() != 1 {
-        let queue = handler.queue();
-        queue.modify_queue(|q| q.insert(0, queue.dequeue(queue.len() - 1).unwrap()));
+    if handler.queue().len() > 1 {
+        if handler.queue().len() >= 2 {
+            let queue = handler.queue();
+            queue.modify_queue(|q| {
+                q.insert(1, queue.dequeue(queue.len() - 1).unwrap());
+            });
+        }
+        send_dj_message(
+            &ctx,
+            msg.channel_id,
+            "Der Song ist jetzt in der Warteschlange.".to_string(),
+        )
+        .await;
+    } else {
+        send_dj_message(
+            &ctx,
+            msg.channel_id,
+            "Musik ballert jetzt auf den Ohren.".to_string(),
+        )
+        .await;
     }
 
-    send_dj_message(
-        &ctx,
-        msg.channel_id,
-        "Musik ballert jetzt auf den Ohren.".to_string(),
-    )
-    .await;
     Ok(())
 }
 

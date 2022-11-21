@@ -37,7 +37,7 @@ async fn skip(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
                 &ctx,
                 msg.channel_id,
                 format!(
-                    "Songs übersrpungen: {} noch in der Warteschlange.",
+                    "Songs übersrpungen, {} Songs noch in der Warteschlange.",
                     queue.len()
                 )
                 .to_string(),
