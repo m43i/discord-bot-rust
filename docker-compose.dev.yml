@@ -1,8 +1,0 @@
-services:
-  bot:
-    build: .
-    environment:
-      - BOT_TOKEN=<YOUR TOKEN>
-      - DRINK_TEXT_CHANNEL=<ChannelID>,<ChannelID>
-      - DRINK_VOICE_CHANNEL=<ChannelID>,<ChannelID>
-      - DJ_CHANNEL=<ChannelID>,<ChannelID>
