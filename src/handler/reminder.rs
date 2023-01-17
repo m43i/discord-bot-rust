@@ -16,7 +16,6 @@ pub async fn drink_reminder(
     }
 
     let drink_users = crate::db::drink::get_drink_users(pool).await;
-    println!("---------------");
     let mut users: Vec<User> = vec![];
 
     let guilds = ctx.cache.guilds();
@@ -34,12 +33,17 @@ pub async fn drink_reminder(
                     continue;
                 }
 
+                if users.contains(&member.user) {
+                    continue;
+                }
+
                 users.push(member.clone().user);
             }
         }
     }
 
     for user in users {
+        println!("Sending drink reminder to {}", user.name);
         let rand_msg = messages.choose(&mut rand::thread_rng()).unwrap();
         let msg = MessageBuilder::new().push(rand_msg).build();
         crate::utils::messages::send_direct_message(ctx, &user, &msg).await;
@@ -71,6 +75,10 @@ pub async fn dream_reminder(ctx: &Context, pool: &sqlx::sqlite::SqlitePool, time
                 }
 
                 if member.user.bot {
+                    continue;
+                }
+
+                if users.contains(&member.user) {
                     continue;
                 }
 

@@ -39,8 +39,6 @@ pub async fn get_voice_members(ctx: &Context, id: u64) -> Vec<Member> {
 
         let members = members.unwrap();
 
-        println!("{}, {}", &channel.name, &members.len());
-
         for member in members {
             result.push(member);
         }

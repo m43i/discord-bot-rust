@@ -28,8 +28,6 @@ pub async fn run_add_dream(
     option: &[CommandDataOption],
 ) -> String {
     let mut msg: String = "Denk an deine Traumroutine!".to_string();
-
-    println!("Option: {:?}", option);
     
     if let Some(opt) = option.get(0).and_then(|opt| opt.resolved.as_ref()) {
         if let CommandDataOptionValue::String(s) = &opt {

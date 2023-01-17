@@ -8,10 +8,22 @@ edition = "2021"
 [dependencies]
 dotenvy = "0.15"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
-serenity = { version = "0.11.5", default_features=false, features = ["gateway", "client", "voice", "model", "cache", "http", "rustls_backend", "temp_cache"] }
+serenity = { version = "0.11.5", default_features = false, features = [
+    "gateway",
+    "client",
+    "voice",
+    "model",
+    "cache",
+    "http",
+    "rustls_backend",
+    "temp_cache",
+] }
 rand = "0.8.5"
 anyhow = "1"
-songbird = { version = "0.3.0", features = ["builtin-queue"] }
-sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "offline"] }
+sqlx = { version = "0.6", features = [
+    "runtime-tokio-rustls",
+    "sqlite",
+    "offline",
+] }
 cron = "0.12"
 chrono = "0.4"
