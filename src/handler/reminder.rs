@@ -3,18 +3,9 @@ use rand::seq::SliceRandom;
 use serenity::{model::user::User, prelude::Context, utils::MessageBuilder};
 
 /**
- * Send drink reminder to a users 
+ * Send drink reminder to a users
  */
-pub async fn drink_reminder(
-    ctx: &Context,
-    pool: &sqlx::sqlite::SqlitePool,
-    messages: &Vec<&str>,
-    time: DateTime<Utc>,
-) -> bool {
-    if time > Utc::now() {
-        return false;
-    }
-
+pub async fn drink_reminder(ctx: &Context, pool: &sqlx::sqlite::SqlitePool, messages: &Vec<&str>) {
     let drink_users = crate::db::drink::get_drink_users(pool).await;
     let mut users: Vec<User> = vec![];
 
@@ -48,18 +39,12 @@ pub async fn drink_reminder(
         let msg = MessageBuilder::new().push(rand_msg).build();
         crate::utils::messages::send_direct_message(ctx, &user, &msg).await;
     }
-
-    return true;
 }
 
 /**
  * Send dream reminder to users
  */
-pub async fn dream_reminder(ctx: &Context, pool: &sqlx::sqlite::SqlitePool, time: DateTime<Utc>) -> bool {
-    if time > Utc::now() {
-        return false;
-    }
-
+pub async fn dream_reminder(ctx: &Context, pool: &sqlx::sqlite::SqlitePool) {
     let dream_users = crate::db::dream::get_dream_users(pool).await;
     let mut users: Vec<User> = vec![];
 
@@ -95,12 +80,11 @@ pub async fn dream_reminder(ctx: &Context, pool: &sqlx::sqlite::SqlitePool, time
         }
 
         let dream_user = dream_user.unwrap();
-        let user_msg = &dream_user.message.clone().unwrap_or("Denk an deine Traumroutine.".to_string());
-        let msg = MessageBuilder::new()
-            .push(user_msg)
-            .build();
+        let user_msg = &dream_user
+            .message
+            .clone()
+            .unwrap_or("Denk an deine Traumroutine.".to_string());
+        let msg = MessageBuilder::new().push(user_msg).build();
         crate::utils::messages::send_direct_message(ctx, &user, &msg).await;
     }
-
-    return true;
 }

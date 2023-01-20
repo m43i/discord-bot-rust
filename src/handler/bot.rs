@@ -76,7 +76,12 @@ impl EventHandler for Bot {
     async fn cache_ready(&self, ctx: Context, _guilds: Vec<GuildId>) {
         println!("Cache is ready!");
 
-        let drink_schedule = Schedule::from_str("0 */45 * * * * *").unwrap();
+        let drink_schedule = Schedule::from_str("0 */15 * * * * *").unwrap();
+        let mut drink_counter: u8 = 0;
+        let drink_interval: f64 = 15.0;
+        let drink_goal: f64 = 45.0;
+        let drink_counter_goal = (drink_goal / drink_interval) as u8;
+
         let dream_schedule = Schedule::from_str("0 30 * * * * *").unwrap();
 
         let mut next_drink = drink_schedule.upcoming(Utc).next().unwrap();
@@ -88,21 +93,23 @@ impl EventHandler for Bot {
 
         tokio::spawn(async move {
             loop {
-                if crate::handler::reminder::drink_reminder(
-                    &ctx,
-                    &pool_clone,
-                    &messages,
-                    next_drink,
-                )
-                .await
-                {
-                    next_drink = drink_schedule.upcoming(Utc).next().unwrap();
-                    println!("Next drink reminder: {}", next_drink);
+                if Utc::now() > next_drink {
+                    if drink_counter == drink_counter_goal {
+                        crate::handler::reminder::drink_reminder(&ctx, &pool_clone, &messages).await;
+                        if let Some(next) = drink_schedule.upcoming(Utc).next() {
+                            next_drink = next;
+                        }
+                        drink_counter = 0;
+                    } else {
+                        drink_counter += 1;
+                    }
                 }
 
-                if crate::handler::reminder::dream_reminder(&ctx, &pool_clone, next_dream).await {
-                    next_dream = dream_schedule.upcoming(Utc).next().unwrap();
-                    println!("Next dream reminder: {}", next_dream);
+                if Utc::now() > next_dream {
+                    crate::handler::reminder::dream_reminder(&ctx, &pool_clone).await;
+                    if let Some(next) = dream_schedule.upcoming(Utc).next() {
+                        next_dream = next;
+                    }
                 }
 
                 tokio::time::sleep(std::time::Duration::from_secs(10)).await;
