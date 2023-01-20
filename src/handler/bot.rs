@@ -76,15 +76,16 @@ impl EventHandler for Bot {
     async fn cache_ready(&self, ctx: Context, _guilds: Vec<GuildId>) {
         println!("Cache is ready!");
 
-        let drink_schedule = Schedule::from_str("0 */15 * * * * *").unwrap();
-        let mut drink_counter: u8 = 0;
-        let drink_interval: f64 = 15.0;
-        let drink_goal: f64 = 45.0;
-        let drink_counter_goal = (drink_goal / drink_interval) as u8;
-
+        let drink_schedule_1 = Schedule::from_str("0 0/45 12/3 * * * *").unwrap();
+        let drink_schedule_2 = Schedule::from_str("0 30 13/3 * * * *").unwrap();
+        let drink_schedule_3 = Schedule::from_str("0 15 14/3 * * * *").unwrap();
         let dream_schedule = Schedule::from_str("0 30 * * * * *").unwrap();
 
-        let mut next_drink = drink_schedule.upcoming(Utc).next().unwrap();
+        let mut next_drinks = vec![
+            drink_schedule_1.upcoming(Utc).next().unwrap(),
+            drink_schedule_2.upcoming(Utc).next().unwrap(),
+            drink_schedule_3.upcoming(Utc).next().unwrap(),
+        ];
         let mut next_dream = dream_schedule.upcoming(Utc).next().unwrap();
 
         let pool_clone = self.db.clone();
@@ -93,17 +94,15 @@ impl EventHandler for Bot {
 
         tokio::spawn(async move {
             loop {
-                if Utc::now() > next_drink {
-                    if drink_counter == drink_counter_goal {
+                for next_drink in next_drinks.iter_mut() {
+                    if Utc::now() > *next_drink {
                         crate::handler::reminder::drink_reminder(&ctx, &pool_clone, &messages).await;
-                        if let Some(next) = drink_schedule.upcoming(Utc).next() {
-                            next_drink = next;
+                        if let Some(next) = drink_schedule_1.upcoming(Utc).next() {
+                            *next_drink = next;
                         }
-                        drink_counter = 0;
-                    } else {
-                        drink_counter += 1;
                     }
                 }
+                
 
                 if Utc::now() > next_dream {
                     crate::handler::reminder::dream_reminder(&ctx, &pool_clone).await;
