@@ -1,22 +1,23 @@
-use chrono::{DateTime, Utc};
 use rand::seq::SliceRandom;
 use serenity::{model::user::User, prelude::Context, utils::MessageBuilder};
+
+use crate::prisma::PrismaClient;
 
 /**
  * Send drink reminder to a users
  */
-pub async fn drink_reminder(ctx: &Context, pool: &sqlx::sqlite::SqlitePool, messages: &Vec<&str>) {
-    let drink_users = crate::db::drink::get_drink_users(pool).await;
+pub async fn drink_reminder(ctx: &Context, client: &PrismaClient, messages: &Vec<&str>) {
+    let drink_users = client.drinks().find_many(vec![]).exec().await.unwrap_or(vec![]);
     let mut users: Vec<User> = vec![];
 
     let guilds = ctx.cache.guilds();
     for guild in guilds {
         let guild_id = guild.0;
-        let members = crate::utils::channels::get_voice_members(ctx, guild_id).await;
+        let members = crate::utils::channels::get_guild_voice_members(ctx, guild_id).await;
 
         for member in members {
             for drink_user in &drink_users {
-                if !drink_user.eq(&member) {
+                if drink_user.id != member.user.id.0 as i64 {
                     continue;
                 }
 
@@ -44,18 +45,18 @@ pub async fn drink_reminder(ctx: &Context, pool: &sqlx::sqlite::SqlitePool, mess
 /**
  * Send dream reminder to users
  */
-pub async fn dream_reminder(ctx: &Context, pool: &sqlx::sqlite::SqlitePool) {
-    let dream_users = crate::db::dream::get_dream_users(pool).await;
+pub async fn dream_reminder(ctx: &Context, client: &PrismaClient) {
+    let dream_users = client.dreams().find_many(vec![]).exec().await.unwrap_or(vec![]);
     let mut users: Vec<User> = vec![];
 
     let guilds = ctx.cache.guilds();
     for guild in guilds {
         let guild_id = guild.0;
-        let members = crate::utils::channels::get_voice_members(ctx, guild_id).await;
+        let members = crate::utils::channels::get_guild_voice_members(ctx, guild_id).await;
 
         for member in members {
             for dream_user in &dream_users {
-                if !dream_user.eq(&member) {
+                if dream_user.id != member.user.id.0 as i64 {
                     continue;
                 }
 
@@ -73,9 +74,9 @@ pub async fn dream_reminder(ctx: &Context, pool: &sqlx::sqlite::SqlitePool) {
     }
 
     for user in users {
-        let dream_user = dream_users.iter().find(|&x| x.eq(&user));
+        let dream_user = dream_users.iter().find(|&x| x.id == user.id.0 as i64);
 
-        if None == dream_user {
+        if dream_user.is_none() {
             continue;
         }
 

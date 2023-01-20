@@ -1,9 +1,12 @@
 use serenity::{
     builder::CreateApplicationCommand,
     model::prelude::{
-        command::CommandOptionType, interaction::application_command::{CommandDataOption, CommandDataOptionValue},
+        command::CommandOptionType,
+        interaction::application_command::{CommandDataOption, CommandDataOptionValue},
     },
 };
+
+use crate::prisma::{dreams, PrismaClient};
 
 /**
  * Register the add dream command
@@ -24,37 +27,48 @@ pub fn register_add_dream(cmd: &mut CreateApplicationCommand) -> &mut CreateAppl
  */
 pub async fn run_add_dream(
     user_id: u64,
-    pool: &sqlx::SqlitePool,
+    client: &PrismaClient,
     option: &[CommandDataOption],
 ) -> String {
     let mut msg: String = "Denk an deine Traumroutine!".to_string();
-    
+
     if let Some(opt) = option.get(0).and_then(|opt| opt.resolved.as_ref()) {
         if let CommandDataOptionValue::String(s) = &opt {
             msg = s.to_string();
         }
     }
 
-    if crate::db::dream::insert_dream_user(pool, user_id as i64, None, msg).await {
-        println!("Added user {} to the dream list", user_id);
-        return String::from("Du wurdest zu der Traumliste hinzugefügt.");
-    } else {
-        println!("Failed to add user {} to the dream list", user_id);
-        return String::from("Du bist bereits auf der Traumliste.");
+    let dream_user = client
+        .dreams()
+        .create(
+            user_id as i64,
+            vec![dreams::message::set(Some(msg.clone()))],
+        )
+        .exec()
+        .await;
+
+    if dream_user.is_err() {
+        return run_remove_dream(user_id, client).await;
     }
+
+    return String::from("Du wurdest zu der Traumliste hinzugefügt.");
 }
 
 /**
  * Run the remove dream command
  */
-pub async fn run_remove_dream(user_id: u64, pool: &sqlx::SqlitePool) -> String {
-    if crate::db::dream::remove_dream_user(pool, user_id as i64).await {
-        println!("Removed user {} from the dream list", user_id);
-        return String::from("Du wurdest von der Traumliste entfernt.");
-    } else {
-        println!("Failed to remove user {} from the dream list", user_id);
+pub async fn run_remove_dream(user_id: u64, client: &PrismaClient) -> String {
+    let delete_user = client
+        .dreams()
+        .delete(dreams::id::equals(user_id as i64))
+        .exec()
+        .await;
+
+    if delete_user.is_err() {
         return String::from("Du bist nicht auf der Traumliste.");
     }
+
+    return String::from("Du wurdest von der Traumliste entfernt.");
 }
 
 /**

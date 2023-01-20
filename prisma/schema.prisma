@@ -1,0 +1,20 @@
+generator client {
+    provider = "cargo prisma"
+    output   = "../src/prisma.rs"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:../database.db"
+}
+
+model dreams {
+    id       BigInt     @id
+    duration Int?    @default(60)
+    message  String? @default("Denk an deine Traumroutine!")
+}
+
+model drinks {
+    id       BigInt  @id
+    duration Int? @default(60)
+}

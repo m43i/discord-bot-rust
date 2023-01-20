@@ -1,5 +1,7 @@
 use chrono::Utc;
+use prisma_client_rust::NewClientError;
 use cron::Schedule;
+use crate::prisma::PrismaClient;
 use serenity::{
     model::prelude::{
         command::Command,
@@ -11,7 +13,7 @@ use serenity::{
 use std::str::FromStr;
 
 pub struct Bot {
-    pub db: sqlx::SqlitePool,
+    pub db: PrismaClient,
 }
 
 #[serenity::async_trait]
@@ -88,26 +90,37 @@ impl EventHandler for Bot {
         ];
         let mut next_dream = dream_schedule.upcoming(Utc).next().unwrap();
 
-        let pool_clone = self.db.clone();
-
         let messages = crate::utils::messages::get_drink_messages();
 
+        println!("Schedules: {:?}, {:?}", next_drinks, next_dream);
+
         tokio::spawn(async move {
+            let client: Result<PrismaClient, NewClientError> = PrismaClient::_builder().build().await;
+
+            if client.is_err() {
+                println!("Could not connect to database: {:?}", client.err());
+                return;
+            }
+
+            let client = client.unwrap();
+
             loop {
                 for next_drink in next_drinks.iter_mut() {
                     if Utc::now() > *next_drink {
-                        crate::handler::reminder::drink_reminder(&ctx, &pool_clone, &messages).await;
+                        crate::handler::reminder::drink_reminder(&ctx, &client, &messages).await;
                         if let Some(next) = drink_schedule_1.upcoming(Utc).next() {
                             *next_drink = next;
+                            println!("Next drink: {:?}", next_drink);
                         }
                     }
                 }
                 
 
                 if Utc::now() > next_dream {
-                    crate::handler::reminder::dream_reminder(&ctx, &pool_clone).await;
+                    crate::handler::reminder::dream_reminder(&ctx, &client).await;
                     if let Some(next) = dream_schedule.upcoming(Utc).next() {
                         next_dream = next;
+                        println!("Next dream: {:?}", next_dream);
                     }
                 }
 
