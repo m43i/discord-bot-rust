@@ -78,9 +78,9 @@ impl EventHandler for Bot {
     async fn cache_ready(&self, ctx: Context, _guilds: Vec<GuildId>) {
         println!("Cache is ready!");
 
-        let drink_schedule_1 = Schedule::from_str("0 0/45 12/3 * * * *").unwrap();
-        let drink_schedule_2 = Schedule::from_str("0 30 13/3 * * * *").unwrap();
-        let drink_schedule_3 = Schedule::from_str("0 15 14/3 * * * *").unwrap();
+        let drink_schedule_1 = Schedule::from_str("0 0/45 0/3 * * * *").unwrap();
+        let drink_schedule_2 = Schedule::from_str("0 30 1/3 * * * *").unwrap();
+        let drink_schedule_3 = Schedule::from_str("0 15 2/3 * * * *").unwrap();
         let dream_schedule = Schedule::from_str("0 30 * * * * *").unwrap();
 
         let mut next_drinks = vec![
