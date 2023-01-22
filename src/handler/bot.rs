@@ -105,16 +105,15 @@ impl EventHandler for Bot {
             let client = client.unwrap();
 
             loop {
-                for next_drink in next_drinks.iter_mut() {
-                    if Utc::now() > *next_drink {
+                for i in 0..next_drinks.len() {
+                    if Utc::now() > next_drinks[i] {
                         crate::handler::reminder::drink_reminder(&ctx, &client, &messages).await;
                         if let Some(next) = drink_schedule_1.upcoming(Utc).next() {
-                            *next_drink = next;
-                            println!("Next drink: {:?}", next_drink);
+                            next_drinks[i] = next;
+                            println!("Next drink: {:?}", next_drinks[i]);
                         }
                     }
                 }
-                
 
                 if Utc::now() > next_dream {
                     crate::handler::reminder::dream_reminder(&ctx, &client).await;
