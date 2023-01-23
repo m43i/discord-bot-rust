@@ -78,15 +78,17 @@ impl EventHandler for Bot {
     async fn cache_ready(&self, ctx: Context, _guilds: Vec<GuildId>) {
         println!("Cache is ready!");
 
-        let drink_schedule_1 = Schedule::from_str("0 0/45 0/3 * * * *").unwrap();
-        let drink_schedule_2 = Schedule::from_str("0 30 1/3 * * * *").unwrap();
-        let drink_schedule_3 = Schedule::from_str("0 15 2/3 * * * *").unwrap();
+        let drink_schedules = vec![
+            Schedule::from_str("0 0/45 0/3 * * * *").unwrap(),
+            Schedule::from_str("0 30 1/3 * * * *").unwrap(),
+            Schedule::from_str("0 15 2/3 * * * *").unwrap(),
+        ];
         let dream_schedule = Schedule::from_str("0 30 * * * * *").unwrap();
 
         let mut next_drinks = vec![
-            drink_schedule_1.upcoming(Utc).next().unwrap(),
-            drink_schedule_2.upcoming(Utc).next().unwrap(),
-            drink_schedule_3.upcoming(Utc).next().unwrap(),
+            drink_schedules[0].upcoming(Utc).next().unwrap(),
+            drink_schedules[1].upcoming(Utc).next().unwrap(),
+            drink_schedules[2].upcoming(Utc).next().unwrap(),
         ];
         let mut next_dream = dream_schedule.upcoming(Utc).next().unwrap();
 
@@ -108,7 +110,7 @@ impl EventHandler for Bot {
                 for i in 0..next_drinks.len() {
                     if Utc::now() > next_drinks[i] {
                         crate::handler::reminder::drink_reminder(&ctx, &client, &messages).await;
-                        if let Some(next) = drink_schedule_1.upcoming(Utc).next() {
+                        if let Some(next) = drink_schedules[i].upcoming(Utc).next() {
                             next_drinks[i] = next;
                             println!("Next drink: {:?}", next_drinks[i]);
                         }
